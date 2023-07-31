@@ -4,7 +4,7 @@ from spiral import safe_simple_split
 from transformers import RobertaTokenizer
 from tree_sitter import Language, Parser
 from tree_sitter import Language, Parser
-tokenizer = RobertaTokenizer.from_pretrained('codebert-base')
+tokenizer = RobertaTokenizer.from_pretrained('microsoft/codebert-base')
 path = '../contrast_learning/'
 Language.build_library(
     # Store the library in the `build` directory

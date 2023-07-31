@@ -11,9 +11,9 @@ from data_loader import BertData
 from discremiter import GenerationModel, PredictHead, RobertaClassificationHead
 from torch import nn
 torch.cuda.set_device(3) 
-tokenizer = RobertaTokenizer.from_pretrained('graphcodebert')
-encoder = RobertaModel.from_pretrained('graphcodebert')
-config = RobertaConfig.from_pretrained('graphcodebert')
+tokenizer = RobertaTokenizer.from_pretrained('microsoft/graphcodebert-base')
+encoder = RobertaModel.from_pretrained('microsoft/graphcodebert-base')
+config = RobertaConfig.from_pretrained('microsoft/graphcodebert-base')
 best_loss=1e9
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 config.num_layers = 1

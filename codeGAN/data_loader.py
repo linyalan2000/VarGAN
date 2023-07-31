@@ -11,7 +11,7 @@ import numpy as np
 import jsonlines
 from transformers import RobertaTokenizer, T5Tokenizer, T5ForConditionalGeneration, BartTokenizer
 use_cuda = torch.cuda.is_available()
-tokenizer = RobertaTokenizer.from_pretrained("codebert-base") 
+tokenizer = RobertaTokenizer.from_pretrained("microsoft/codebert-base") 
 class BertData(data.Dataset):
     """
     Dataset that has binary samples.
