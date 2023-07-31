@@ -14,7 +14,6 @@ from varclr.data.preprocessor import CodePreprocessor
 from varclr.data.vocab import Vocab
 from varclr.models import urls_pretrained_model
 
-import sys
 
 class Encoder(nn.Module):
     @staticmethod

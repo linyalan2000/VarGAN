@@ -59,9 +59,7 @@ if __name__ == "__main__":
             ),
             ModelCheckpoint(
                 monitor=f"spearmanr/val_{os.path.basename(dm.valid_data_file)}",
-                mode="max",
-                filename='best_model',
-                dirpath = '/data2/lyl/gan'
+                mode="max"
             ),
         ]
     else:
@@ -70,8 +68,7 @@ if __name__ == "__main__":
                 monitor=f"loss/val_{os.path.basename(dm.train_data_file)}",
                 patience=args.patience,
             ),
-            ModelCheckpoint(monitor=f"loss/val_{os.path.basename(dm.train_data_file)}", 
-                            filename=f'best_model', dirpath = '/data2/lyl/gan'
+            ModelCheckpoint(monitor=f"loss/val_{os.path.basename(dm.train_data_file)}"
                             ),
         ]
 

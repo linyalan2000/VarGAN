@@ -1,9 +1,8 @@
 import numpy
 import sys
 from collections import defaultdict
-sys.path.append('/home/lyl/VarCLR')
+sys.path.append('~/VarGAN/')
 import torch
-
 from varclr.utils.infer import MockArgs
 from varclr.data.preprocessor import CodePreprocessor
 
@@ -14,11 +13,10 @@ if __name__ == "__main__":
     embs = embs.cuda()
     var2idx = dict([(var, idx) for idx, var in enumerate(vars)])
     processor = CodePreprocessor(MockArgs())
-    # Ks = [1, 5, 10, 25, 50, 100, 250, 500, 1000]
-    Ks = [1, 5, 10, 25, 50, 100]
+    Ks = [1, 5, 10, 25, 50, 100, 250, 500, 1000]
     topk_succ = defaultdict(int)
     tot = 0
-    with open('typo_corr.txt', "r") as f:
+    with open('var.txt', "r") as f:
         for line in f:
             try:
                 var1, var2 = line.strip().split()
@@ -40,7 +38,7 @@ if __name__ == "__main__":
             tot += 1
             for k in Ks:
                 result = torch.topk(embs @ embs[var2idx[var1]], k=k + 1)
-                topk_succ[k] += var2 in [vars[idx] for idx in result.indices][1:] # 和自己的相似度是1
+                topk_succ[k] += var2 in [vars[idx] for idx in result.indices][1:] 
                 if k == 5:
                     print(var1, var2)
                     print([vars[idx] for idx in result.indices][1:])
@@ -50,5 +48,3 @@ if __name__ == "__main__":
     for k in Ks:
         print(f"Recall@{k} = {100 * topk_succ[k] / tot:.1f}")
         total_score += topk_succ[k] / tot
-    # with open('result.txt', 'w') as f:
-    #     f.write(str(total_score))

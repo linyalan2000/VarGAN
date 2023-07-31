@@ -22,11 +22,8 @@ def get_data(thresh):
     # freq_map_file = f'../contrast_learning/subtoken_{lang}.json'
     freq_map = json.load(open(freq_map_file, 'r'))
     codes = getCodeFromFiles(f'cs-cs.var.tok.txt')
-    # thresh = find_threshold(sample(codes, 10000), lang, freq_map)
-    # write to a txt file
     writer = open(f'cs-cs-freq-self_bak.var.tok.txt', 'w')
     cnt = 0
-    # codes = sample(codes, 1000)
     high_num = 0
     low_num = 0
     for item in codes:
@@ -56,4 +53,4 @@ if __name__ == '__main__':
     # get some parameters from user
     parser = get_parser()
     params = parser.parse_args()
-    get_data(75)
+    get_data(61)

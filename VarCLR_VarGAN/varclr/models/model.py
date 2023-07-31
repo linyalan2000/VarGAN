@@ -23,7 +23,6 @@ class Model(pl.LightningModule):
 
     def _forward(self, batch):
         (x_idxs, x_lengths), (y_idxs, y_lengths), x_label, y_label = batch
-        # print(x_idxs, x_lengths)
         x_ret = self.encoder(x_idxs, x_lengths)
         y_ret = self.encoder(y_idxs, y_lengths)
 
@@ -33,8 +32,6 @@ class Model(pl.LightningModule):
             x_label[i] = 1 - x_label[i]
             y_label[i] = 1 - y_label[i]
 
-        # loss = loss_fct(logits, labels)
-        # 这里如果是生成器要反一下的
         if self.args.label == 'new':
             return self.loss_nec(x_ret, y_ret) + self.loss_cross(x_pred, x_label) +  self.loss_cross(y_pred, y_label)
         else:
@@ -85,7 +82,6 @@ class Model(pl.LightningModule):
             return self._unlabeled_eval_step(batch, batch_idx)
 
     def _unlabeled_epoch_end(self, outputs, prefix):
-        # loss = torch.tensor([o["loss"] for o in outputs]).mean()
         loss = torch.cat([o["loss"] for o in outputs]).mean()
         self.log(f"loss/{prefix}", loss)
 
@@ -94,24 +90,7 @@ class Model(pl.LightningModule):
         labels = torch.cat([o["labels"] for o in outputs]).tolist()
         self.log(f"pearsonr/{prefix}", pearsonr(scores, labels)[0])
         self.log(f"spearmanr/{prefix}", spearmanr(scores, labels).correlation)
-        filename = 'result.txt'
-        # 如果文件存在，则读取文件中的值并加上score，否则创建文件并写入score
-        if os.path.isfile(filename):
-            with open(filename, 'r') as f:
-                # 读取文件中的值并转换为浮点数
-                value = float(f.read())
-                # 加score
-                if self.args.label == 'new':
-                    value += spearmanr(scores, labels).correlation
-                elif self.args.label == 'org':
-                    value -= spearmanr(scores, labels).correlation
-            with open(filename, 'w') as f:
-                # 将新值写入文件
-                f.write(str(value))
-        else:
-            with open(filename, 'w') as f:
-                # 如果文件不存在，则写入score
-                f.write(str(spearmanr(scores, labels).correlation))
+
 
     def _shared_epoch_end(self, outputs, prefix):
         if "labels" in outputs[0]:
@@ -146,12 +125,7 @@ class Model(pl.LightningModule):
 
     def configure_optimizers(self):
 
-        # optimizer = optim.Adam([{'encoder_params': self.encoder.parameters()}, {'decoder_params': self.decoder.parameters()}], lr=learning_rate, weight_decay=weight_decay)
-
         opt_g = optim.Adam(self.encoder.parameters(), lr=self.args.lr)
         opt_d = optim.Adam(self.classifier.parameters(), lr=self.args.dis_lr)
-        # return {"bert": optim.AdamW}.get(self.args.model, optim.Adam)(
-        #     self.parameters(), lr=self.args.lr
-        # )
 
         return [opt_g, opt_d], []

@@ -3,16 +3,15 @@ import sys
 import random
 import numpy as np
 import torch
-from torch.nn.utils.rnn import pad_sequence
+
 from tqdm import tqdm
-from transformers import AutoTokenizer, AutoModel
+from transformers import AutoTokenizer
 sys.path.append('/home/lyl/VarCLR')
 from varclr.models.model import Model
-from varclr.data.vocab import Vocab
 from varclr.data.preprocessor import CodePreprocessor
 from varclr.utils.options import add_options
 from varclr.models import urls_pretrained_model
-from varclr.models.tokenizers import PretrainedTokenizer
+
 
 def forward(model, input_ids, attention_mask):
     output = model(
