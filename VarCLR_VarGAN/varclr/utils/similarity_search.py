@@ -1,8 +1,8 @@
 import numpy
 import sys
 from collections import defaultdict
-sys.path.append('~/VarGAN/')
 import torch
+sys.path.append('~/VarGAN/')
 from varclr.utils.infer import MockArgs
 from varclr.data.preprocessor import CodePreprocessor
 

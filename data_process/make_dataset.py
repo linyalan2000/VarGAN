@@ -1,8 +1,7 @@
 #+1: low-frequency word +1 0: no low-frenquency words
-from utlts import *
+from model.utlts import *
 import json
 from random import sample
-import random
 import jsonlines
 import argparse
 def get_parser():
@@ -19,10 +18,10 @@ def get_parser():
     return parser
 def main(params):  
     lang = params.language_name
-    freq_map_file = f'../contrast_learning/subtoken_{lang}.json'
+    freq_map_file = f'subtoken_{lang}.json'
     freq_map = json.load(open(freq_map_file, 'r'))
     for mode in ['train', 'valid']:
-        codes = getCodeFromFiles(f'/data/lyl/CodeSearchNet/{lang}_{mode}.pkl')[0]
+        codes = getCodeFromFiles(f'{lang}_{mode}.pkl')[0]
         if mode == 'train':
             thresh = find_threshold(sample(codes, 3000), lang, freq_map)
         # thresh = 5000

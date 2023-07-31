@@ -6,7 +6,6 @@ import torch
 
 from tqdm import tqdm
 from transformers import AutoTokenizer
-sys.path.append('/home/lyl/VarCLR')
 from varclr.models.model import Model
 from varclr.data.preprocessor import CodePreprocessor
 from varclr.utils.options import add_options

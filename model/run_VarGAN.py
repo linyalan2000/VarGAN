@@ -1,21 +1,17 @@
-import pickle
 import torch
-import json
-from transformers import RobertaTokenizer, RobertaConfig, RobertaModel, RobertaForCausalLM, RobertaForSequenceClassification
+from transformers import RobertaTokenizer, RobertaConfig, RobertaModel
 import numpy as np
 import time
 import datetime
 import random
 import os
-from tokenizer import Tokenizer
-from data_loader import BertData,BertData_adjust
+from data_loader import BertData
 from discremiter import GenerationModel, PredictHead, RobertaClassificationHead
 from torch import nn
-torch.cuda.set_device(1)  
-tokenizer = Tokenizer()
-config = RobertaConfig()
-config.vocab_size = 50265
-encoder = RobertaModel(config)
+torch.cuda.set_device(3) 
+tokenizer = RobertaTokenizer.from_pretrained('microsoft/graphcodebert-base')
+encoder = RobertaModel.from_pretrained('microsoft/graphcodebert-base')
+config = RobertaConfig.from_pretrained('microsoft/graphcodebert-base')
 best_loss=1e9
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 config.num_layers = 1
@@ -27,11 +23,11 @@ model = GenerationModel(encoder, head, classifier, config, tokenizer)
 
 model.train().to(device)
 optimizer_gen = torch.optim.AdamW(encoder.parameters(),
-                  lr = 5e-7, # args.learning_rate - default is 5e-5
+                  lr = 1e-6, # args.learning_rate - default is 5e-5
                   eps = 1e-8 # args.adam_epsilon  - default is 1e-8
                 )
 optimizer_head = torch.optim.AdamW(head.parameters(),
-                  lr = 5e-7, # args.learning_rate - default is 5e-5
+                  lr = 1e-6, # args.learning_rate - default is 5e-5
                   eps = 1e-8 # args.adam_epsilon  - default is 1e-8
                 )
 optimizer_dis = torch.optim.AdamW(classifier.parameters(),
@@ -47,11 +43,8 @@ def format_time(elapsed):
 seed_val = 114
 def save_model(model, epoch, timestamp, name):
     """Save model parameters to checkpoint"""
-    os.makedirs(f'/data2/lyl/codeGan_model/', exist_ok=True)
-    if name == None:
-        ckpt_path=f'/data2/lyl/codeGan_model/tmp_gen_{epoch}.pkl'
-    else:
-        ckpt_path=f'/data2/lyl/codeGan_model/{name}.pkl'
+    os.makedirs(f'./save_model', exist_ok=True)
+    ckpt_path=f'./save_model/vargan_{epoch}.pkl'
     print(f'Saving model parameters to {ckpt_path}')
     torch.save(model.state_dict(), ckpt_path)
 
@@ -64,7 +57,7 @@ np.random.seed(seed_val)
 torch.manual_seed(seed_val)
 torch.cuda.manual_seed_all(seed_val)
 # 2~4
-epochs = 3
+epochs = 10
 
 
 
@@ -72,9 +65,9 @@ epochs = 3
 ###############################################################################
 # Load data
 ###############################################################################
-train_set=BertData_adjust('/home/lyl/codeGAN/data/java_train_data.jsonl')
-valid_set=BertData_adjust('/home/lyl/codeGAN/data/java_valid_data.jsonl')
-train_loader=torch.utils.data.DataLoader(dataset=train_set, batch_size=16, shuffle=True, num_workers=1)
+train_set=BertData('data/java_train_data.jsonl')
+valid_set=BertData('data/java_valid_data.jsonl')
+train_loader=torch.utils.data.DataLoader(dataset=train_set, batch_size=32, shuffle=True, num_workers=1)
 valid_loader=torch.utils.data.DataLoader(dataset=valid_set, batch_size=32, shuffle=False, num_workers=1)
 print("Loaded data!")
 
@@ -87,6 +80,7 @@ for epoch_i in range(0, epochs):
     # ========================================
     #               Training
     # ========================================
+    
 
 
     print("")
@@ -218,7 +212,6 @@ for epoch_i in range(0, epochs):
     else:
         not_increase_num += 1
     
-
     
         
 

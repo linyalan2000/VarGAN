@@ -1,15 +1,12 @@
-import pickle
 import torch
-import json
 from transformers import RobertaConfig, RobertaForMaskedLM
-from transformers import BertModel, BertConfig
 import numpy as np
 from tokenizer import Tokenizer
 import time
 import datetime
 import random
 import os
-from data_loader import BertData
+from data_loader import BertMyTokData
 from torch import nn
 torch.cuda.set_device(1) 
 tokenizer = Tokenizer()
@@ -20,8 +17,6 @@ config = RobertaConfig()
 config.vocab_size = 50265
 model = RobertaForMaskedLM(config)
 
-ckpt_path = '/data2/lyl/codebert_pretrain/gen_2.pkl'
-model.load_state_dict(torch.load(ckpt_path))
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 model.train().to(device)
 optimizer = torch.optim.AdamW(model.parameters(),
@@ -37,8 +32,8 @@ def format_time(elapsed):
 seed_val = 114
 def save_model(model, epoch, timestamp):
     """Save model parameters to checkpoint"""
-    os.makedirs(f'/data2/lyl/codebert_pretrain/', exist_ok=True)
-    ckpt_path=f'/data2/lyl/codebert_pretrain/gen_{epoch}.pkl'
+    os.makedirs(f'./save_model/', exist_ok=True)
+    ckpt_path=f'./save_model/codebert_{epoch}.pkl'
     print(f'Saving model parameters to {ckpt_path}')
     torch.save(model.state_dict(), ckpt_path)
 
@@ -58,8 +53,8 @@ epochs = 3
 ###############################################################################
 # Load data
 ###############################################################################
-train_set=BertData('data/java_train.jsonl')
-valid_set=BertData('data/java_valid.jsonl')
+train_set=BertMyTokData('data/java_train.jsonl')
+valid_set=BertMyTokData('data/java_valid.jsonl')
 train_loader=torch.utils.data.DataLoader(dataset=train_set, batch_size=16, shuffle=True, num_workers=1)
 valid_loader=torch.utils.data.DataLoader(dataset=valid_set, batch_size=32, shuffle=False, num_workers=1)
 print("Loaded data!")

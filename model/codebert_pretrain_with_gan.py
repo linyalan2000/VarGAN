@@ -1,19 +1,21 @@
 import pickle
 import torch
 import json
-from transformers import RobertaTokenizer, RobertaConfig, RobertaModel, RobertaForCausalLM, RobertaForSequenceClassification
+from transformers import RobertaConfig, RobertaModel
 import numpy as np
 import time
 import datetime
 import random
 import os
-from data_loader import BertData
-from discremiter import GenerationGanOnylModel, PredictHead, RobertaClassificationHead
+from tokenizer import Tokenizer
+from data_loader import BertMyTokGanData
+from discremiter import GenerationModel, PredictHead, RobertaClassificationHead
 from torch import nn
-torch.cuda.set_device(0) 
-tokenizer = RobertaTokenizer.from_pretrained('microsoft/codebert-base')
-encoder = RobertaModel.from_pretrained('microsoft/codebert-base')
-config = RobertaConfig.from_pretrained('microsoft/codebert-base')
+torch.cuda.set_device(1)  
+tokenizer = Tokenizer()
+config = RobertaConfig()
+config.vocab_size = 50265
+encoder = RobertaModel(config)
 best_loss=1e9
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 config.num_layers = 1
@@ -21,7 +23,7 @@ config.output_size = 50265
 head  = PredictHead(config)
 
 classifier = RobertaClassificationHead(config)
-model = GenerationGanOnylModel(encoder, head, classifier, config, tokenizer)
+model = GenerationModel(encoder, head, classifier, config, tokenizer)
 
 model.train().to(device)
 optimizer_gen = torch.optim.AdamW(encoder.parameters(),
@@ -33,7 +35,7 @@ optimizer_head = torch.optim.AdamW(head.parameters(),
                   eps = 1e-8 # args.adam_epsilon  - default is 1e-8
                 )
 optimizer_dis = torch.optim.AdamW(classifier.parameters(),
-                  lr = 5e-6, # args.learning_rate - default is 5e-5
+                  lr = 5e-5, # args.learning_rate - default is 5e-5
                   eps = 1e-8 # args.adam_epsilon  - default is 1e-8
                 )
 def format_time(elapsed):
@@ -45,8 +47,11 @@ def format_time(elapsed):
 seed_val = 114
 def save_model(model, epoch, timestamp, name):
     """Save model parameters to checkpoint"""
-    os.makedirs(f'/data2/lyl/codeGan_model/', exist_ok=True)
-    ckpt_path=f'/data2/lyl/codeGan_model/gen_only_gan_5e7_{epoch}.pkl'
+    os.makedirs(f'./save_model', exist_ok=True)
+    if name == None:
+        ckpt_path=f'./save_model/codebert_with_gan_{epoch}.pkl'
+    else:
+        ckpt_path=f'./save_model/{name}.pkl'
     print(f'Saving model parameters to {ckpt_path}')
     torch.save(model.state_dict(), ckpt_path)
 
@@ -59,7 +64,7 @@ np.random.seed(seed_val)
 torch.manual_seed(seed_val)
 torch.cuda.manual_seed_all(seed_val)
 # 2~4
-epochs = 1
+epochs = 3
 
 
 
@@ -67,11 +72,10 @@ epochs = 1
 ###############################################################################
 # Load data
 ###############################################################################
-train_set=BertData('data/java_train_data.jsonl')
-valid_set=BertData('data/java_valid_data.jsonl')
-train_loader=torch.utils.data.DataLoader(dataset=train_set, batch_size=32, shuffle=True, num_workers=1)
+train_set=BertMyTokGanData('data_process/java_train_data.jsonl')
+valid_set=BertMyTokGanData('data_process/java_valid_data.jsonl')
+train_loader=torch.utils.data.DataLoader(dataset=train_set, batch_size=16, shuffle=True, num_workers=1)
 valid_loader=torch.utils.data.DataLoader(dataset=valid_set, batch_size=32, shuffle=False, num_workers=1)
-# change_loader=torch.utils.data.DataLoader(dataset=train_set, batch_size=32, shuffle=True, num_workers=1)
 print("Loaded data!")
 
 total_t0 = time.time()
@@ -83,7 +87,6 @@ for epoch_i in range(0, epochs):
     # ========================================
     #               Training
     # ========================================
-    
 
 
     print("")
@@ -97,8 +100,6 @@ for epoch_i in range(0, epochs):
     total_train_loss = 0
     total_dis_loss = 0
     for step, batch in enumerate(train_loader):
-        if step % 3000 == 0 and not step == 0:
-            break
         # output the progress information
         if step % 40 == 0 and not step == 0:
             elapsed = format_time(time.time() - t0)
@@ -130,13 +131,13 @@ for epoch_i in range(0, epochs):
 
         optimizer_dis.zero_grad()
         dis_loss.backward()
-        optimizer_dis.step()           
+        optimizer_dis.step()
+           
     
     # time for a single epoach
     training_time = format_time(time.time() - t0)
 
     print("")
-    # print("  Average training loss: {0:.2f}".format(avg_train_loss))
     print("  Training epcoh took: {:}".format(training_time))
 
     # ========================================
@@ -217,6 +218,7 @@ for epoch_i in range(0, epochs):
     else:
         not_increase_num += 1
     
+
     
         
 

@@ -1,16 +1,14 @@
-import pickle
 import torch
-import json
-from transformers import RobertaTokenizer, RobertaConfig, RobertaModel, RobertaForCausalLM, RobertaForSequenceClassification
+from transformers import RobertaTokenizer, RobertaConfig, RobertaModel
 import numpy as np
 import time
 import datetime
 import random
 import os
 from data_loader import BertData
-from discremiter import GenerationMIPOnylModel, PredictHead, RobertaClassificationHead
+from discremiter import GenerationGanOnylModel, PredictHead, RobertaClassificationHead
 from torch import nn
-torch.cuda.set_device(3) 
+torch.cuda.set_device(0) 
 tokenizer = RobertaTokenizer.from_pretrained('microsoft/codebert-base')
 encoder = RobertaModel.from_pretrained('microsoft/codebert-base')
 config = RobertaConfig.from_pretrained('microsoft/codebert-base')
@@ -21,7 +19,7 @@ config.output_size = 50265
 head  = PredictHead(config)
 
 classifier = RobertaClassificationHead(config)
-model = GenerationMIPOnylModel(encoder, head, classifier, config, tokenizer)
+model = GenerationGanOnylModel(encoder, head, classifier, config, tokenizer)
 
 model.train().to(device)
 optimizer_gen = torch.optim.AdamW(encoder.parameters(),
@@ -33,7 +31,7 @@ optimizer_head = torch.optim.AdamW(head.parameters(),
                   eps = 1e-8 # args.adam_epsilon  - default is 1e-8
                 )
 optimizer_dis = torch.optim.AdamW(classifier.parameters(),
-                  lr = 1e-5, # args.learning_rate - default is 5e-5
+                  lr = 5e-6, # args.learning_rate - default is 5e-5
                   eps = 1e-8 # args.adam_epsilon  - default is 1e-8
                 )
 def format_time(elapsed):
@@ -45,8 +43,8 @@ def format_time(elapsed):
 seed_val = 114
 def save_model(model, epoch, timestamp, name):
     """Save model parameters to checkpoint"""
-    os.makedirs(f'/data2/lyl/codeGan_model/', exist_ok=True)
-    ckpt_path=f'/data2/lyl/codeGan_model/gen_only_mip1_{epoch}.pkl'
+    os.makedirs(f'./save_model/', exist_ok=True)
+    ckpt_path=f'./save_model/vargan_only_gan_{epoch}.pkl'
     print(f'Saving model parameters to {ckpt_path}')
     torch.save(model.state_dict(), ckpt_path)
 
@@ -59,7 +57,7 @@ np.random.seed(seed_val)
 torch.manual_seed(seed_val)
 torch.cuda.manual_seed_all(seed_val)
 # 2~4
-epochs = 10
+epochs = 1
 
 
 
@@ -97,6 +95,8 @@ for epoch_i in range(0, epochs):
     total_train_loss = 0
     total_dis_loss = 0
     for step, batch in enumerate(train_loader):
+        if step % 3000 == 0 and not step == 0:
+            break
         # output the progress information
         if step % 40 == 0 and not step == 0:
             elapsed = format_time(time.time() - t0)
@@ -116,6 +116,7 @@ for epoch_i in range(0, epochs):
         (gen_loss, dis_loss) = loss
         # total loss
         total_train_loss += gen_loss.item()
+        total_dis_loss += dis_loss.item()
         # backward
         if step % 2 == 0:
             optimizer_gen.zero_grad()
@@ -126,8 +127,8 @@ for epoch_i in range(0, epochs):
             optimizer_head.step()
 
         optimizer_dis.zero_grad()
-        optimizer_dis.step()
-         
+        dis_loss.backward()
+        optimizer_dis.step()           
     
     # time for a single epoach
     training_time = format_time(time.time() - t0)

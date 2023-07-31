@@ -11,7 +11,6 @@ from pytorch_lightning.loggers import WandbLogger
 from transformers import AutoModel
 import sys
 import math
-sys.path.append('/home/lyl/VarCLR')
 from varclr.data.dataset import RenamesDataModule
 from varclr.models.model import Model
 from varclr.models.tokenizers import PretrainedTokenizer

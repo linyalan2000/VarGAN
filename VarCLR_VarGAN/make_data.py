@@ -1,5 +1,5 @@
 # 代码 + 1表示有低频词 0表示没有低频词
-from VarCLR_VarGAN.utlts import *
+from model.utlts import *
 import json
 from random import sample
 import random
@@ -13,7 +13,6 @@ def get_parser():
     parser = argparse.ArgumentParser()
 
     # model
-    parser.add_argument("--input_dir", type=str, default="/data/lyl/CodeSearchNet", help="dir of input code")
     parser.add_argument("--output_dir",type=str,default=".", help='output dir of result')
     parser.add_argument("--language_name",type=str,default="java", help='output dir of result')
     return parser

@@ -1,10 +1,3 @@
-import pickle
-import random
-from spiral import safe_simple_split
-from transformers import RobertaTokenizer
-from tree_sitter import Language, Parser
-from tree_sitter import Language, Parser
-
 def getCodeFromFiles(path):
     """ Return a list of code lines from a pkl file.
     """

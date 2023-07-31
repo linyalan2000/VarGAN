@@ -1,19 +1,17 @@
-import pickle
 import torch
-import json
-from transformers import RobertaTokenizer, RobertaConfig, RobertaModel, RobertaForCausalLM, RobertaForSequenceClassification
+from transformers import RobertaTokenizer, RobertaConfig, RobertaModel
 import numpy as np
 import time
 import datetime
 import random
 import os
 from data_loader import BertData
-from discremiter import GenerationModel, PredictHead, RobertaClassificationHead
+from discremiter import GenerationMIPOnylModel, PredictHead, RobertaClassificationHead
 from torch import nn
 torch.cuda.set_device(3) 
-tokenizer = RobertaTokenizer.from_pretrained('microsoft/graphcodebert-base')
-encoder = RobertaModel.from_pretrained('microsoft/graphcodebert-base')
-config = RobertaConfig.from_pretrained('microsoft/graphcodebert-base')
+tokenizer = RobertaTokenizer.from_pretrained('microsoft/codebert-base')
+encoder = RobertaModel.from_pretrained('microsoft/codebert-base')
+config = RobertaConfig.from_pretrained('microsoft/codebert-base')
 best_loss=1e9
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 config.num_layers = 1
@@ -21,19 +19,19 @@ config.output_size = 50265
 head  = PredictHead(config)
 
 classifier = RobertaClassificationHead(config)
-model = GenerationModel(encoder, head, classifier, config, tokenizer)
+model = GenerationMIPOnylModel(encoder, head, classifier, config, tokenizer)
 
 model.train().to(device)
 optimizer_gen = torch.optim.AdamW(encoder.parameters(),
-                  lr = 1e-6, # args.learning_rate - default is 5e-5
+                  lr = 5e-7, # args.learning_rate - default is 5e-5
                   eps = 1e-8 # args.adam_epsilon  - default is 1e-8
                 )
 optimizer_head = torch.optim.AdamW(head.parameters(),
-                  lr = 1e-6, # args.learning_rate - default is 5e-5
+                  lr = 5e-7, # args.learning_rate - default is 5e-5
                   eps = 1e-8 # args.adam_epsilon  - default is 1e-8
                 )
 optimizer_dis = torch.optim.AdamW(classifier.parameters(),
-                  lr = 5e-5, # args.learning_rate - default is 5e-5
+                  lr = 1e-5, # args.learning_rate - default is 5e-5
                   eps = 1e-8 # args.adam_epsilon  - default is 1e-8
                 )
 def format_time(elapsed):
@@ -45,8 +43,8 @@ def format_time(elapsed):
 seed_val = 114
 def save_model(model, epoch, timestamp, name):
     """Save model parameters to checkpoint"""
-    os.makedirs(f'/data2/lyl/codeGan_model/', exist_ok=True)
-    ckpt_path=f'/data2/lyl/codeGan_model/gen_graph_1e_6_{epoch}.pkl'
+    os.makedirs(f'./save_model', exist_ok=True)
+    ckpt_path=f'./save_model/vargan_only_mip_{epoch}.pkl'
     print(f'Saving model parameters to {ckpt_path}')
     torch.save(model.state_dict(), ckpt_path)
 
@@ -71,6 +69,7 @@ train_set=BertData('data/java_train_data.jsonl')
 valid_set=BertData('data/java_valid_data.jsonl')
 train_loader=torch.utils.data.DataLoader(dataset=train_set, batch_size=32, shuffle=True, num_workers=1)
 valid_loader=torch.utils.data.DataLoader(dataset=valid_set, batch_size=32, shuffle=False, num_workers=1)
+# change_loader=torch.utils.data.DataLoader(dataset=train_set, batch_size=32, shuffle=True, num_workers=1)
 print("Loaded data!")
 
 total_t0 = time.time()
@@ -115,7 +114,6 @@ for epoch_i in range(0, epochs):
         (gen_loss, dis_loss) = loss
         # total loss
         total_train_loss += gen_loss.item()
-        total_dis_loss += dis_loss.item()
         # backward
         if step % 2 == 0:
             optimizer_gen.zero_grad()
@@ -126,14 +124,14 @@ for epoch_i in range(0, epochs):
             optimizer_head.step()
 
         optimizer_dis.zero_grad()
-        dis_loss.backward()
         optimizer_dis.step()
-           
+         
     
     # time for a single epoach
     training_time = format_time(time.time() - t0)
 
     print("")
+    # print("  Average training loss: {0:.2f}".format(avg_train_loss))
     print("  Training epcoh took: {:}".format(training_time))
 
     # ========================================
