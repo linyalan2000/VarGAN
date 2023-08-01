@@ -1,3 +1,6 @@
+'''
+train the pretrained model with GAN
+'''
 import pickle
 import torch
 import json
@@ -72,8 +75,8 @@ epochs = 3
 ###############################################################################
 # Load data
 ###############################################################################
-train_set=BertMyTokGanData('data_process/java_train_data.jsonl')
-valid_set=BertMyTokGanData('data_process/java_valid_data.jsonl')
+train_set=BertMyTokGanData('data/java_train_data.jsonl')
+valid_set=BertMyTokGanData('data/java_valid_data.jsonl')
 train_loader=torch.utils.data.DataLoader(dataset=train_set, batch_size=16, shuffle=True, num_workers=1)
 valid_loader=torch.utils.data.DataLoader(dataset=valid_set, batch_size=32, shuffle=False, num_workers=1)
 print("Loaded data!")
@@ -171,20 +174,17 @@ for epoch_i in range(0, epochs):
         with torch.no_grad():    
             loss, idx, classifier_output = model(code_input, label, code_label)
         acc_cnt = 0
-        total_cnt = 0
-        name_ok_cnt = 0
-        avg_org_simi = 0
-        avg_pred_simi = 0
-        batch_acc = 0
-        mask_cnt = 0
+        total_cnt = 0 #calculate the sum of the code input
+        batch_acc = 0 #the accuracy of each batch
+        mask_cnt = 0 #calculate the number of masks
         # mlm accuracy
-        _, pred_ids = torch.max(idx, dim = 1)
+        _, pred_ids = torch.max(idx, dim = 1)# regard the maximum as the prediction
         for k in range(len(pred_ids)):
             acc = 0
             for i in range(len(pred_ids[k])):
-                if code_input[k][i] == 50264:
+                if code_input[k][i] == 50264: #'50264' is the label of mask 
                     mask_cnt += 1
-                    if pred_ids[k][i] == code_label[k][i]:
+                    if pred_ids[k][i] == code_label[k][i]: #the prediction is correct
                         acc += 1
                 
             if mask_cnt != 0:
@@ -212,6 +212,7 @@ for epoch_i in range(0, epochs):
     validation_time = format_time(time.time() - t0)
     print("  Validation Loss: {0:.2f}".format(avg_val_loss))
     print("  Validation took: {:}".format(validation_time))
+    #save model
     if avg_val_loss < best_loss:
         best_loss = avg_val_loss
         save_model(model, epoch_i, timestamp, name=None)    # loss for this epoch

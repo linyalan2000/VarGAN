@@ -1,4 +1,5 @@
-#+1: low-frequency word +1 0: no low-frenquency words
+# make dataset for VarGAN pretrain
+# 1: low-frequency word  0: no low-frenquency words
 from model.utlts import *
 import json
 from random import sample

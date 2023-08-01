@@ -1,3 +1,6 @@
+'''
+Fine-tuning the  with only MIP in summary tasks 
+'''
 import torch
 from transformers import RobertaTokenizer, RobertaConfig, RobertaModel
 import numpy as np
@@ -150,7 +153,6 @@ for epoch_i in range(0, epochs):
     # Tracking variables 
     total_eval_accuracy = 0
     total_pred_accuracy = 0
-    total_name_ok_acc = 0
     total_eval_loss = 0
     # Evaluate data for one epoch
     cnt = 0
@@ -166,9 +168,6 @@ for epoch_i in range(0, epochs):
             loss, idx, classifier_output = model(code_input, label, code_label)
         acc_cnt = 0
         total_cnt = 0
-        name_ok_cnt = 0
-        avg_org_simi = 0
-        avg_pred_simi = 0
         batch_acc = 0
         mask_cnt = 0
         # mlm accuracy
@@ -206,6 +205,7 @@ for epoch_i in range(0, epochs):
     validation_time = format_time(time.time() - t0)
     print("  Validation Loss: {0:.2f}".format(avg_val_loss))
     print("  Validation took: {:}".format(validation_time))
+    #save model
     if avg_val_loss < best_loss:
         best_loss = avg_val_loss
         save_model(model, epoch_i, timestamp, name=None)    # loss for this epoch

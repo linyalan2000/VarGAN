@@ -1,3 +1,6 @@
+'''
+Fine-tuning the  with VarGAN in summary tasks 
+'''
 import torch
 from transformers import RobertaTokenizer, RobertaConfig, RobertaModel
 import numpy as np
@@ -206,6 +209,7 @@ for epoch_i in range(0, epochs):
     validation_time = format_time(time.time() - t0)
     print("  Validation Loss: {0:.2f}".format(avg_val_loss))
     print("  Validation took: {:}".format(validation_time))
+    #save model
     if avg_val_loss < best_loss:
         best_loss = avg_val_loss
         save_model(model, epoch_i, timestamp, name=None)    # loss for this epoch

@@ -1,3 +1,6 @@
+'''
+train the pretrained model without GAN
+'''
 import torch
 from transformers import RobertaConfig, RobertaForMaskedLM
 import numpy as np
@@ -142,17 +145,14 @@ for epoch_i in range(0, epochs):
         predict_acc_cnt=0
         acc_cnt = 0
         total_cnt = 0
-        name_ok_cnt = 0
-        avg_org_simi = 0
-        avg_pred_simi = 0
         avg_predict_accuracy=0
 
         _,idx=torch.max(logits,dim=2)
         for batch_idx in range(0, len(code_input)):
             for k in range(0,len(idx[batch_idx])):
-                if code_input[batch_idx][k] == 50263:
+                if code_input[batch_idx][k] == 50263: #'50623' is the padding
                     total_cnt += 1
-                    if idx[batch_idx][k]== label[batch_idx][k]:
+                    if idx[batch_idx][k]== label[batch_idx][k]: # the prediction is correct
                         predict_acc_cnt += 1
                 
         predict_accuracy += predict_acc_cnt / total_cnt
@@ -162,6 +162,7 @@ for epoch_i in range(0, epochs):
     print("  Predict Accuracy: {0:.2f}".format(avg_predict_accuracy))   
     validation_time = format_time(time.time() - t0)
     print("  Validation took: {:}".format(validation_time))
+    #save model
     if avg_predict_accuracy > best_acc:
         best_acc = avg_predict_accuracy
         save_model(model, epoch_i, timestamp)

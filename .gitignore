@@ -1,2 +1,2 @@
-data_process/*.pkl
-data_process/*.jsonl
+model/data/*.pkl
+model/data/*.jsonl
