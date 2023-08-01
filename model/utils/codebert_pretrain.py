@@ -4,12 +4,12 @@ train the pretrained model without GAN
 import torch
 from transformers import RobertaConfig, RobertaForMaskedLM
 import numpy as np
-from tokenizer import Tokenizer
+from utils.tokenizer import Tokenizer
 import time
 import datetime
 import random
 import os
-from data_loader import BertMyTokData
+from utils.data_loader import BertMyTokData
 from torch import nn
 torch.cuda.set_device(1) 
 tokenizer = Tokenizer()

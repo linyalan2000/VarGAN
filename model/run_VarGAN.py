@@ -8,8 +8,8 @@ import time
 import datetime
 import random
 import os
-from data_loader import BertData
-from discremiter import GenerationModel, PredictHead, RobertaClassificationHead
+from utils.data_loader import BertData
+from utils.discremiter import GenerationModel, PredictHead, RobertaClassificationHead
 from torch import nn
 torch.cuda.set_device(3) 
 tokenizer = RobertaTokenizer.from_pretrained('microsoft/graphcodebert-base')

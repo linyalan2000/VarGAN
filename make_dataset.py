@@ -1,6 +1,6 @@
 # make dataset for VarGAN pretrain
 # 1: low-frequency word  0: no low-frenquency words
-from model.utlts import *
+from model.utils.identifiers_process import *
 import json
 from random import sample
 import jsonlines
@@ -13,7 +13,6 @@ def get_parser():
     parser = argparse.ArgumentParser()
 
     # model
-    parser.add_argument("--input_dir", type=str, default="/data/lyl/CodeSearchNet", help="dir of input code")
     parser.add_argument("--output_dir",type=str,default=".", help='output dir of result')
     parser.add_argument("--language_name",type=str,default="java", help='output dir of result')
     return parser
@@ -25,10 +24,8 @@ def main(params):
         codes = getCodeFromFiles(f'{lang}_{mode}.pkl')[0]
         if mode == 'train':
             thresh = find_threshold(sample(codes, 3000), lang, freq_map)
-        # thresh = 5000
         writer = jsonlines.open(f'data/{lang}_{mode}_data.jsonl', 'w')
         cnt = 0
-        # codes = sample(codes, 1000)
         high_num = 0
         low_num = 0
         for item in codes:

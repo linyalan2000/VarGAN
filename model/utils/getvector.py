@@ -5,8 +5,8 @@ get the hidden states of each word in the vocabulary
 import torch
 import json
 from transformers import RobertaForMaskedLM,RobertaConfig, RobertaModel
-from discremiter import RobertaClassificationHead
-from tokenizer import Tokenizer
+from utils.discremiter import RobertaClassificationHead
+from utils.tokenizer import Tokenizer
 import pickle
 
 tokenizer = Tokenizer()
@@ -15,7 +15,7 @@ config.vocab_size = 50265
 model = RobertaForMaskedLM(config)
 encoder = RobertaModel(config)
 classifier = RobertaClassificationHead(config)
-ckpt_path = '/data2/lyl/codeGan_model/tmp_gen_1.pkl'
+ckpt_path = 'YOUR_CKPT_PATH'
 pretrained_dict = torch.load(ckpt_path)
 classifier_dict = {}
 new_dict = {}

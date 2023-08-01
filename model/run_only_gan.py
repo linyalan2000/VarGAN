@@ -8,8 +8,8 @@ import time
 import datetime
 import random
 import os
-from data_loader import BertData
-from discremiter import GenerationGanOnylModel, PredictHead, RobertaClassificationHead
+from utils.data_loader import BertData
+from utils.discremiter import GenerationGanOnylModel, PredictHead, RobertaClassificationHead
 from torch import nn
 torch.cuda.set_device(0) 
 tokenizer = RobertaTokenizer.from_pretrained('microsoft/codebert-base')
@@ -34,7 +34,7 @@ optimizer_head = torch.optim.AdamW(head.parameters(),
                   eps = 1e-8 # args.adam_epsilon  - default is 1e-8
                 )
 optimizer_dis = torch.optim.AdamW(classifier.parameters(),
-                  lr = 5e-6, # args.learning_rate - default is 5e-5
+                  lr = 1e-5, # args.learning_rate - default is 5e-5
                   eps = 1e-8 # args.adam_epsilon  - default is 1e-8
                 )
 def format_time(elapsed):
@@ -98,8 +98,6 @@ for epoch_i in range(0, epochs):
     total_train_loss = 0
     total_dis_loss = 0
     for step, batch in enumerate(train_loader):
-        if step % 3000 == 0 and not step == 0:
-            break
         # output the progress information
         if step % 40 == 0 and not step == 0:
             elapsed = format_time(time.time() - t0)

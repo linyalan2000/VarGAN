@@ -10,9 +10,9 @@ import time
 import datetime
 import random
 import os
-from tokenizer import Tokenizer
-from data_loader import BertMyTokGanData
-from discremiter import GenerationModel, PredictHead, RobertaClassificationHead
+from utils.tokenizer import Tokenizer
+from utils.data_loader import BertMyTokGanData
+from utils.discremiter import GenerationModel, PredictHead, RobertaClassificationHead
 from torch import nn
 torch.cuda.set_device(1)  
 tokenizer = Tokenizer()
