@@ -1,5 +1,6 @@
 # VarGAN
-This repository contains code for VarGAN, a novel method for variable name representations. It enhances the training of low-frequency variables through
+This repository contains code for VarGAN: Adversarial Learning of Variable
+Semantic Representations, a novel method for variable name representations. It enhances the training of low-frequency variables through
 adversarial training. 
 
 ## Requirments
